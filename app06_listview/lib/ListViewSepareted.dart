@@ -56,7 +56,7 @@ class _ListViewSeparetedState extends State<ListViewSepareted> {
             );
           },
           // Aparencia do separador
-          separatorBuilder: (context,index){
+          separatorBuilder: (context, index) {
             return Divider(
               color: Colors.lightBlue[100],
               thickness: 2,
