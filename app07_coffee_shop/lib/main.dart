@@ -1,9 +1,8 @@
-import 'dart:async';
-
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 
+import 'model/cadastro.dart';
 import 'model/cafe.dart';
 
 Future<void> main() async {
@@ -15,13 +14,14 @@ Future<void> main() async {
       debugShowCheckedModeBanner: false,
       initialRoute: '/principal',
       routes: {
-        '/principal': (context) => TelaPrincipal(),
+        '/principal': (context) => TelaPrincipal(uid: ''),
+        '/cadastro': (context) => TelaCadastro(),
       },
     )
   );
 
   // Teste Firebase
-  var db = FirebaseFirestore.instance;
+  // var db = FirebaseFirestore.instance;
 
   // adicionar um novo documento
   /*
@@ -42,6 +42,10 @@ Future<void> main() async {
 
 // TelaPrincipal
 class TelaPrincipal extends StatefulWidget {
+
+  final String uid;
+  TelaPrincipal({ required this.uid });
+
   @override
   _TelaPrincipalState createState() => _TelaPrincipalState();
 }
@@ -49,33 +53,44 @@ class TelaPrincipal extends StatefulWidget {
 class _TelaPrincipalState extends State<TelaPrincipal> {
 
   // Instancia do Firestore
-  var db = FirebaseFirestore.instance;
+  // var db = FirebaseFirestore.instance;
 
   // Lista dinamica de objetos do modelo Cafe
-  List<Cafe> cafes = [];
+  // List<Cafe> cafes = [];
 
   // Declaracao de um "ouvidor", que tem como objetico 
   // monitorar as alteracoes realizadas na colecao
-  StreamSubscription<QuerySnapshot> query;
+  // StreamSubscription<QuerySnapshot> query;
+
+  // Referencia a colecao nomeada "cafes" do Firestore
+  late CollectionReference cafes;
 
   @override
   void initState() {
     super.initState();
+    cafes = FirebaseFirestore.instance.collection('cafes');
+  }
 
-    // Registrar o "ouvidor" e iniciar o monitoramento
+  Widget itemLista(item) {
+    
+    Cafe cafe = Cafe.fromJson(item.data(), item.id);
+    
+    return ListTile(
+      title: Text(cafe.nome, style: TextStyle(fontSize: 24)),
+      subtitle: Text(cafe.preco, style: TextStyle(fontSize: 18)),
+      trailing: IconButton(
+        icon: Icon(Icons.delete),
+        onPressed: () {
+          // Apagar um café
+          cafes.doc(cafe.id).delete();
+        },
+      ),
 
-    // Destruir o "ouvidor" atual, caso ele exista
-    query?.cancel();
+      onTap: () {
+        Navigator.pushNamed(context, '/cadastro', arguments: cafe.id);
+      },
 
-    query = db.collection('cafes').snapshots().listen((event) {
-      // Atualizar a lista de Cafes
-      setState(() {
-        cafes = event.docs.map(
-          (e) => Cafe.fromMap(e.data(), e.id)
-        ).toList();
-      });
-    });
-
+    );
   }
 
   @override
@@ -91,7 +106,10 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
       body: StreamBuilder<QuerySnapshot>(
         
         // Fonte de dados
-        stream: db.collection('cafes').snapshots(),
+        // stream: db.collection('cafes').snapshots(),
+        
+        // fonte de dados
+        stream: cafes.snapshots(),
 
         // Aparencia
         builder: (context, snapshot) {
@@ -103,22 +121,33 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
               return Center(child: CircularProgressIndicator());
 
             default:
-              return ListView.builder(
-                itemCount: cafes.length,
-                itemBuilder: (context, index) {
-                  return ListTile(
-                    title: Text(cafes[index].nome, style: TextStyle(fontSize: 24)),
-                    subtitle: Text(cafes[index].preco, style: TextStyle(fontSize: 18)),
+              final dados = snapshot.requireData;
 
-                    trailing: IconButton(
-                      icon: Icon(Icons.delete),
-                      onPressed: () {
+              return ListView.builder(
+                itemCount: dados.size,
+                itemBuilder: (context, index) {
+
+                  // Cafe cafe = Cafe.fromJson(
+                  //   dados.docs[index].data().toString(),
+                  //   dados.docs[index].id
+                  // )
+
+                  // return ListTile(
+                  //   title: Text(cafes[index].nome, style: TextStyle(fontSize: 24)),
+                  //   subtitle: Text(cafes[index].preco, style: TextStyle(fontSize: 18)),
+
+                  //   trailing: IconButton(
+                  //     icon: Icon(Icons.delete),
+                  //     onPressed: () {
                         
-                        // Apagar um cafe
-                        db.collection('cafe').doc(cafes[index].id).delete();
-                      },
-                    ),
-                  );
+                  //       // Apagar um cafe
+                  //       cafes.doc(cafe.id).delete(),
+                  //       db.collection('cafe').doc(cafes[index].id).delete();
+                  //     },
+                  //   ),
+                  // );
+
+                  return itemLista(dados.docs[index]);
                 }
               );
           }
@@ -131,7 +160,7 @@ class _TelaPrincipalState extends State<TelaPrincipal> {
         backgroundColor: Colors.brown,
         child: Icon(Icons.add),
         onPressed: () {
-
+          Navigator.pushNamed(context, '/cadastro');
         },
       ),
       backgroundColor: Colors.brown[50],
