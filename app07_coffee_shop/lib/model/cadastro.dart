@@ -10,19 +10,17 @@ class _TelaCadastroState extends State<TelaCadastro> {
   var txtNome = TextEditingController();
   var txtPreco = TextEditingController();
 
-  //Recuperar um DOCUMENTO a partir do ID
+  // Recuperar um DOCUMENTO a partir do ID
   void getDocumentById(String id) async {
-    await FirebaseFirestore.instance
-        .collection('cafes').doc(id).get()
-        .then((value) {
-          txtNome.text = value.data()!['nome'];
-          txtPreco.text = value.data()!['preco'];
+    await FirebaseFirestore.instance.collection('cafes').doc(id).get().then((value) {
+      txtNome.text = value.data()!['nome'];
+      txtPreco.text = value.data()!['preco'];
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    //Recuperar o ID que foi passado como argumento
+    // Recuperar o ID que foi passado como argumento
     var id = ModalRoute.of(context)?.settings.arguments;
 
     if (id != null) {
@@ -33,9 +31,9 @@ class _TelaCadastroState extends State<TelaCadastro> {
 
     return Scaffold(
       appBar: AppBar(
-          title: Text('Café Store'),
-          centerTitle: true,
-          backgroundColor: Colors.brown,
+        title: Text('Café Store'),
+        centerTitle: true,
+        backgroundColor: Colors.brown,
       ),
       backgroundColor: Colors.brown[50],
       body: Container(
@@ -63,36 +61,37 @@ class _TelaCadastroState extends State<TelaCadastro> {
               Container(
                 width: 150,
                 child: OutlinedButton(
-                    child: Text('salvar'),
-                    onPressed: () {
-                      var db = FirebaseFirestore.instance;
+                  child: Text('salvar'),
+                  onPressed: () {
+                    var db = FirebaseFirestore.instance;
 
-                      if (id == null) {
-                        //Adicionar um novo documento
-                        db.collection('cafes').add({
+                    if (id == null) {
+                      //Adicionar um novo documento
+                      db.collection('cafes').add({
+                        "nome": txtNome.text,
+                        "preco": txtPreco.text,
+                      });
+                    } else {
+                      //Atualizar um documento
+                      db.collection('cafes').doc(id.toString()).update({
                           "nome": txtNome.text,
                           "preco": txtPreco.text,
-                        });
-                      } else {
-                        //Atualizar um documento
-                        db.collection('cafes').doc(id.toString()).update(
-                          {
-                            "nome": txtNome.text,
-                            "preco": txtPreco.text,
-                          }
-                        );
-                      }
+                        }
+                      );
+                    }
 
-                      Navigator.pop(context);
-                    }),
+                    Navigator.pop(context);
+                  }
+                ),
               ),
               Container(
                 width: 150,
                 child: OutlinedButton(
-                    child: Text('cancelar'),
-                    onPressed: () {
-                      Navigator.pop(context);
-                    }),
+                  child: Text('cancelar'),
+                  onPressed: () {
+                    Navigator.pop(context);
+                  }
+                ),
               ),
             ],
           )
