@@ -18,7 +18,7 @@
 
 ## About the Project
 
-...
+Cross-platform mobile development with Dart and Flutter.
 
 Made in College.
 
@@ -27,7 +27,8 @@ Made in College.
 
 This project was developed with the following technologies:
 
-- []()
+- [Dart](https://dart.dev/)
+- [Flutter](https://flutter.dev/)
 
 
 ## References
